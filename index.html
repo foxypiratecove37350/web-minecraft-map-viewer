@@ -13,12 +13,19 @@
 			
 			
 			html {
-				background: #f30000;
+				background: #333;
+				background-image: url("./bg-wool-dark.png");
+				background-size: contain;
+				image-rendering: pixelated;
+				image-rendering: crisp-edges;
 				font-family: "SegoeUIVF", "Segoe UI", sans-serif;
 				padding: 15px;
 				color: #111;
 			}
 			
+			html img, html canvas {
+				image-rendering: auto;
+			}
 			
 			.canvas {
 				width: 640px;
