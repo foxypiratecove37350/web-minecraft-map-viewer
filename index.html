@@ -10,6 +10,14 @@
 				box-sizing: border-box;
 				transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
 			}
+			
+			
+			html {
+				background: #f30000;
+				font-family: sans-serif;
+			}
+			
+			
 			.canvas {
 				width: 640px;
 				height: 480px;
@@ -25,7 +33,7 @@
 			}
 
 			.tools button {
-				width: 40px;
+				min-width: 40px;
 				height: 40px;
 				border: none;
 				border-radius: 5px;
@@ -41,7 +49,7 @@
 				border-radius: 5px;
 				background: #fff;
 				color: #000;
-				Fontfont-size: 20px;
+				font-size: 20px;
 			}
 		</style>
 	</head>
@@ -54,9 +62,9 @@
 			<button id="move-down">↓</button>
 			<button id="move-right">→</button>
 			<span id="coordinates"></span>
-			<button id="view-top">Vue du dessus</button>
-			<button id="view-iso">Vue isométrique</button>
-			<button id="view-free">Vue en caméra libre</button>
+			<button id="view-top">Top View</button>
+			<button id="view-iso">Isometric View</button>
+			<button id="view-free">FreeCam View</button>
 		</div>
 		<div class="canvas">
 			<canvas id="map"></canvas>
