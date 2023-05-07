@@ -1,0 +1,210 @@
+<html lang="en">
+	<head>
+		<title>Web Minecraft map viewer</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="X-UA-compatible" content="ie=edge">
+		<style>
+			*, ::before, ::after {
+				padding: 0;
+				margin: 0;
+				box-sizing: border-box;
+				transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+			}
+			.canvas {
+				width: 640px;
+				height: 480px;
+				margin: 0 auto;
+				background: #000;
+			}
+
+			.tools {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				margin-bottom: 10px;
+			}
+
+			.tools button {
+				width: 40px;
+				height: 40px;
+				border: none;
+				border-radius: 5px;
+				background: #fff;
+				color: #000;
+				font-size: 20px;
+			}
+
+			.tools span {
+				width: 200px;
+				height: 40px;
+				border: none;
+				border-radius: 5px;
+				background: #fff;
+				color: #000;
+				Fontfont-size: 20px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="tools">
+			<button id="zoom-in">+</button>
+			<button id="zoom-out">-</button>
+			<button id="move-left">←</button>
+			<button id="move-up">↑</button>
+			<button id="move-down">↓</button>
+			<button id="move-right">→</button>
+			<span id="coordinates"></span>
+			<button id="view-top">Vue du dessus</button>
+			<button id="view-iso">Vue isométrique</button>
+			<button id="view-free">Vue en caméra libre</button>
+		</div>
+		<div class="canvas">
+			<canvas id="map"></canvas>
+		</div>
+		<script>
+			// JavaScript code for loading region files and rendering them with WebGL
+			// You can use libraries like Three.js or Babylon.js to simplify working with WebGL
+
+			// Get the canvas element
+			var canvas = document.getElementById("map");
+
+			// Initialize the WebGL context
+			var gl = canvas.getContext("webgl");
+
+			// Create a scene, a camera and a renderer
+			var scene = new THREE.Scene();
+			var camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
+			var renderer = new THREE.WebGLRenderer({canvas: canvas});
+
+			// Load the region files from the Minecraft save folder
+			// You can use libraries like nbt-js to parse the NBT format
+			var loader = new NBT.Loader();
+			loader.load("region/r.0.0.mca", function(data) {
+			  // Parse the region data and create a mesh for each chunk
+			  var region = new NBT.Region(data);
+			  for (var x = 0; x < 32; x++) {
+				for (var z = 0; z < 32; z++) {
+				  var chunk = region.getChunk(x, z);
+				  if (chunk) {
+					var mesh = createChunkMesh(chunk); // A custom function to create a mesh from chunk data
+					scene.add(mesh);
+				  }
+				}
+			  }
+			});
+
+			// Render the scene with the camera
+			renderer.render(scene, camera);
+
+			// JavaScript code for handling the toolbar functionality and the user input
+			// You can use libraries like dat.gui to create a GUI for the toolbar
+
+			// Get the toolbar elements
+			var zoomInButton = document.getElementById("zoom-in");
+			var zoomOutButton = document.getElementById("zoom-out");
+			var moveLeftButton = document.getElementById("move-left");
+			var moveUpButton = document.getElementById("move-up");
+			var moveDownButton = document.getElementById("move-down");
+			var moveRightButton = document.getElementById("move-right");
+			var coordinatesSpan = document.getElementById("coordinates");
+			var viewTopButton = document.getElementById("view-top");
+			var viewIsoButton = document.getElementById("view-iso");
+			var viewFreeButton = document.getElementById("view-free");
+
+			// Add event listeners for the toolbar buttons
+			zoomInButton.addEventListener("click", function() {
+			  // Zoom in the camera by decreasing its field of view
+			  camera.fov -= 5;
+			  camera.updateProjectionMatrix();
+			  renderer.render(scene, camera);
+			});
+
+			zoomOutButton.addEventListener("click", function() {
+			  // Zoom out the camera by increasing its field of view
+			  camera.fov += 5;
+			  camera.updateProjectionMatrix();
+			  renderer.render(scene, camera);
+			});
+
+			moveLeftButton.addEventListener("click", function() {
+			  // Move the camera to the left by decreasing its x position
+			  camera.position.x -= 10;
+			  renderer.render(scene, camera);
+			});
+
+			moveUpButton.addEventListener("click", function() {
+			  // Move the camera up by increasing its y position
+			  camera.position.y += 10;
+			  renderer.render(scene, camera);
+			});
+
+			moveDownButton.addEventListener("click", function() {
+			  // Move the camera down by decreasing its y position
+			  camera.position.y -= 10;
+			  renderer.render(scene, camera);
+			});
+
+			moveRightButton.addEventListener("click", function() {
+			  // Move the camera to the right by increasing its x position
+			  camera.position.x += 10;
+			  renderer.render(scene, camera);
+			});
+
+			viewTopButton.addEventListener("click", function() {
+			  // Set the camera to top view by setting its position and rotation
+			  camera.position.set(0, 100, 0);
+			  camera.rotation.set(-Math.PI / 2, 0, Math.PI / -2);
+			  renderer.render(scene, camera);
+			});
+
+			viewIsoButton.addEventListener("click", function() {
+			  // Set the camera to isometric view by setting its position and rotation
+			  camera.position.set(100, 100, -100);
+			  camera.rotation.set(-Math.PI / -4, Math.PI / -4, Math.PI / -2);
+			  renderer.render(scene, camera);
+			});
+
+			viewFreeButton.addEventListener("click", function() {
+			   // Set the camera to free view by setting its position and rotation to default values
+			   camera.position.set(0, 0, 100);
+			   camera.rotation.set(0, 0, 0);
+			   renderer.render(scene, camera);
+
+			   // Add mouse controls for the free view mode
+			   // You can use libraries like Three.js or Babylon.js to simplify working with mouse controls
+			   var mouse = new THREE.Vector2();
+			   var raycaster = new THREE.Raycaster();
+			   var isMouseDown = false;
+
+			   // Add a mousemove event listener to detect mouse movement and update the camera rotation
+			   document.addEventListener("mousemove", function(event) {
+				 // Get the normalized mouse coordinates
+				 mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+				 mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+				 // Update the raycaster with the mouse and camera
+				 raycaster.setFromCamera(mouse, camera);
+
+				 // Check if the mouse is down and rotate the camera accordingly
+				 if (isMouseDown) {
+				   var angleX = mouse.x * Math.PI / 180; // Convert mouse x movement to radians
+				   var angleY = mouse.y * Math.PI / 180; // Convert mouse y movement to radians
+				   camera.rotation.x += angleY; // Rotate the camera around the x-axis
+				   camera.rotation.y += angleX; // Rotate the camera around the y-axis
+				   renderer.render(scene, camera); // Render the scene with the updated camera
+				 }
+			   });
+
+			   // Add a mousedown event listener to set the isMouseDown flag to true
+			   document.addEventListener("mousedown", function(event) {
+				 isMouseDown = true;
+			   });
+
+			   // Add a mouseup event listener to set the isMouseDown flag to false
+			   document.addEventListener("mouseup", function(event) {
+				 isMouseDown = false;
+			   });
+			});
+		</script>
+	</body>
+</html>
